@@ -1,0 +1,17 @@
+version: "3"
+
+tasks:
+  dev:
+    desc: Run development server with live reload
+    cmds:
+      - wgo go run .
+
+  build:
+    desc: Build the application
+    cmds:
+      - go build -o build/hymn main.go
+
+  test:
+    desc: Run tests
+    cmds:
+      - go test ./...
