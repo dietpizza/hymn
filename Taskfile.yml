@@ -4,7 +4,7 @@ tasks:
   dev:
     desc: Run development server with live reload
     cmds:
-      - wgo go run .
+      - go run .
 
   build:
     desc: Build the application
