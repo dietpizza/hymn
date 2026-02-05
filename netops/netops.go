@@ -4,18 +4,13 @@ import (
 	"dietpizza/hymn/fileops"
 	"dietpizza/hymn/types"
 	"fmt"
+	"io"
 	"net/http"
+	"os"
 )
 
-func GetRangeHeaderValue(byte_range types.ByteRange) types.RangeHeaderInfo {
-	return types.RangeHeaderInfo{
-		Key:   "Range",
-		Value: fmt.Sprintf("bytes=%d-%d", byte_range.Start, byte_range.End),
-	}
-}
-
 func DownloadChunk(url string, file_name string, byte_range types.ByteRange) error {
-	range_header := GetRangeHeaderValue(byte_range)
+	range_header := GetRangeHeader(byte_range)
 	chunk_path, err := fileops.GetChunkFilePath(file_name, byte_range)
 	if err != nil {
 		return err
@@ -33,6 +28,22 @@ func DownloadChunk(url string, file_name string, byte_range types.ByteRange) err
 		return err
 	}
 	defer resp.Body.Close()
+
+	isSuccessfulRequest := resp.StatusCode == http.StatusPartialContent || resp.StatusCode == http.StatusOK
+	if !isSuccessfulRequest {
+		return fmt.Errorf("bad request - status code: %d", resp.StatusCode)
+	}
+
+	wc := &types.WriteCounter{Total: resp.ContentLength}
+	file, err := os.Open(chunk_path)
+	if err != nil {
+		return err
+	}
+
+	_, err = io.Copy(file, io.TeeReader(resp.Body, wc))
+	if err != nil {
+		return err
+	}
 
 	return nil
 }

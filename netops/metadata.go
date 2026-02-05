@@ -1,21 +1,16 @@
 package netops
 
 import (
+	"dietpizza/hymn/types"
 	"errors"
 	"net/http"
 	"strconv"
 )
 
-type RemoteFileMetadata struct {
-	Name                string
-	Size                int64
-	SupportsRangeHeader bool
-}
-
-func GetFileMetadata(url string) (RemoteFileMetadata, error) {
+func GetFileMetadata(url string) (types.RemoteFileMetadata, error) {
 	resp, err := http.Head(url)
 	if err != nil || resp.StatusCode != http.StatusOK {
-		return RemoteFileMetadata{}, errors.New("error getting file metadata")
+		return types.RemoteFileMetadata{}, errors.New("error getting file metadata")
 	}
 	defer resp.Body.Close()
 
@@ -34,7 +29,7 @@ func GetFileMetadata(url string) (RemoteFileMetadata, error) {
 		supports_range = accepts_ranges == "bytes"
 	}
 
-	return RemoteFileMetadata{
+	return types.RemoteFileMetadata{
 		Name:                file_name,
 		Size:                file_size,
 		SupportsRangeHeader: supports_range,
